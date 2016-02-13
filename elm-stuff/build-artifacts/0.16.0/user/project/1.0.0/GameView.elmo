@@ -1,0 +1,244 @@
+Elm.GameView = Elm.GameView || {};
+Elm.GameView.make = function (_elm) {
+   "use strict";
+   _elm.GameView = _elm.GameView || {};
+   if (_elm.GameView.values) return _elm.GameView.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $GameLogic = Elm.GameLogic.make(_elm),
+   $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $Graphics$Input = Elm.Graphics.Input.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Mouse = Elm.Mouse.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Text = Elm.Text.make(_elm);
+   var _op = {};
+   var testField = {ctor: "_Tuple2"
+                   ,_0: _U.list([{id: 1,label: {pos: {col: 1,row: 1},numberOfMove: 3,player: $Maybe.Just($GameLogic.X)}}
+                                ,{id: 2,label: {pos: {col: 1,row: 2},numberOfMove: -1,player: $Maybe.Nothing}}
+                                ,{id: 3,label: {pos: {col: 1,row: 3},numberOfMove: 5,player: $Maybe.Just($GameLogic.O)}}
+                                ,{id: 4,label: {pos: {col: 2,row: 1},numberOfMove: -1,player: $Maybe.Nothing}}
+                                ,{id: 5,label: {pos: {col: 2,row: 2},numberOfMove: -1,player: $Maybe.Nothing}}
+                                ,{id: 6,label: {pos: {col: 2,row: 3},numberOfMove: -1,player: $Maybe.Nothing}}
+                                ,{id: 7,label: {pos: {col: 3,row: 1},numberOfMove: -1,player: $Maybe.Nothing}}
+                                ,{id: 8,label: {pos: {col: 3,row: 2},numberOfMove: -1,player: $Maybe.Nothing}}
+                                ,{id: 9,label: {pos: {col: 3,row: 3},numberOfMove: -1,player: $Maybe.Nothing}}])
+                   ,_1: _U.list([{first: 4,second: 8,label: {numberOfMove: 7,player: $GameLogic.X}}
+                                ,{first: 8,second: 6,label: {numberOfMove: 8,player: $GameLogic.O}}
+                                ,{first: 9,second: 6,label: {numberOfMove: 3,player: $GameLogic.O}}
+                                ,{first: 8,second: 6,label: {numberOfMove: 4,player: $GameLogic.X}}
+                                ,{first: 9,second: 2,label: {numberOfMove: 12,player: $GameLogic.X}}
+                                ,{first: 2,second: 6,label: {numberOfMove: 6,player: $GameLogic.O}}])};
+   var testState = A3($GameLogic.NotFinishedGame,$GameLogic.X,testField,_U.list([]));
+   var testState2 = A3($GameLogic.FinishedGame,$GameLogic.Tie($GameLogic.O),testField,_U.list([]));
+   var testNode3 = {id: 6,label: {pos: {col: 2,row: 3},numberOfMove: -1,player: $Maybe.Nothing}};
+   var testNode2 = {id: 4,label: {pos: {col: 2,row: 1},numberOfMove: -1,player: $Maybe.Nothing}};
+   var idFromPosition = function (_p0) {    var _p1 = _p0;return 3 * (_p1.col - 1) + _p1.row;};
+   var clickSignal = A2($Signal.sampleOn,$Mouse.clicks,$Mouse.position);
+   var newGameMailbox = $Signal.mailbox({ctor: "_Tuple0"});
+   var newGameButton = A2($Graphics$Input.button,A2($Signal.message,newGameMailbox.address,{ctor: "_Tuple0"}),"New Game");
+   var newGameButtonSignal = newGameMailbox.signal;
+   var stateDescription = function (state) {
+      var _p2 = state;
+      if (_p2.ctor === "FinishedGame") {
+            var _p3 = _p2._0;
+            switch (_p3.ctor)
+            {case "Draw": return "Game over. Since nobody has three classical marks in the right position it is a Draw";
+               case "Tie": var _p4 = _p3._0;
+                 return A2($Basics._op["++"],
+                 "Game over. Both players got three classical marks in a line, so we have a tie. 1 Point: ",
+                 A2($Basics._op["++"],$Basics.toString(_p4),A2($Basics._op["++"],"1/2 Points: ",$Basics.toString($GameLogic.switchPlayer(_p4)))));
+               default: return A2($Basics._op["++"],"Game over. Winner: ",$Basics.toString(_p3._0));}
+         } else {
+            return A2($Basics._op["++"],"Next move: ",$Basics.toString(_p2._0));
+         }
+   };
+   var extractOneNode = F2(function (field,node) {
+      var _p5 = node;
+      var id = _p5.id;
+      var label = _p5.label;
+      var _p6 = field;
+      var nodes = _p6._0;
+      var edges = _p6._1;
+      return {ctor: "_Tuple2",_0: label,_1: A2($List.map,function (_) {    return _.label;},A2($GameLogic.incidentEdges,field,node))};
+   });
+   var size = 600;
+   var drawLines = A3($Graphics$Collage.collage,
+   size,
+   size,
+   _U.list([A2($Graphics$Collage.move,
+           {ctor: "_Tuple2",_0: 0 - size / 6,_1: 0},
+           A2($Graphics$Collage.outlined,$Graphics$Collage.solid($Color.black),A2($Graphics$Collage.rect,3,size)))
+           ,A2($Graphics$Collage.move,
+           {ctor: "_Tuple2",_0: size / 6,_1: 0},
+           A2($Graphics$Collage.outlined,$Graphics$Collage.solid($Color.black),A2($Graphics$Collage.rect,3,size)))
+           ,A2($Graphics$Collage.move,
+           {ctor: "_Tuple2",_0: 0,_1: 0 - size / 6},
+           A2($Graphics$Collage.outlined,$Graphics$Collage.solid($Color.black),A2($Graphics$Collage.rect,size,3)))
+           ,A2($Graphics$Collage.move,
+           {ctor: "_Tuple2",_0: 0,_1: size / 6},
+           A2($Graphics$Collage.outlined,$Graphics$Collage.solid($Color.black),A2($Graphics$Collage.rect,size,3)))]));
+   var xline = A2($Graphics$Collage.filled,$Color.blue,A2($Graphics$Collage.rect,8,1 / 4 * size));
+   var xcross = $Graphics$Collage.group(_U.list([A2($Graphics$Collage.rotate,$Basics.degrees(45),xline)
+                                                ,A2($Graphics$Collage.rotate,$Basics.degrees(-45),xline)]));
+   var ocircle = A2($Graphics$Collage.outlined,_U.update($Graphics$Collage.defaultLine,{width: 8,color: $Color.red}),$Graphics$Collage.circle(size / 10));
+   var printClassicalNode = function (_p7) {
+      var _p8 = _p7;
+      var _p11 = _p8.numberOfMove;
+      var moveText = $Graphics$Collage.move({ctor: "_Tuple2",_0: size / 9,_1: (0 - size) / 9});
+      var _p9 = _p8.pos;
+      var row = _p9.row;
+      var col = _p9.col;
+      var moveAll = $Graphics$Collage.move({ctor: "_Tuple2"
+                                           ,_0: 0 - size / 3 + ($Basics.toFloat(col) - 1) * (size / 3)
+                                           ,_1: size / 3 - ($Basics.toFloat(row) - 1) * (size / 3)});
+      var _p10 = _p8.player;
+      if (_p10.ctor === "Nothing") {
+            return _U.list([]);
+         } else {
+            if (_p10._0.ctor === "X") {
+                  return _U.list([moveAll($Graphics$Collage.group(_U.list([xcross
+                                                                          ,moveText(A2($Graphics$Collage.scale,
+                                                                          3,
+                                                                          $Graphics$Collage.toForm($Graphics$Element.show(_p11))))])))]);
+               } else {
+                  return _U.list([moveAll($Graphics$Collage.group(_U.list([ocircle
+                                                                          ,moveText(A2($Graphics$Collage.scale,
+                                                                          3,
+                                                                          $Graphics$Collage.toForm($Graphics$Element.show(_p11))))])))]);
+               }
+         }
+   };
+   var printClassicalMarks = function (field) {
+      var _p12 = field;
+      var nodes = _p12._0;
+      var edges = _p12._1;
+      return A2($List.map,function (_p13) {    return $Graphics$Collage.group(printClassicalNode(function (_) {    return _.label;}(_p13)));},nodes);
+   };
+   var formatOneField = function (forms) {
+      var moveCoordinates = A2($GameLogic.tuples,_U.list([(0 - size) / 9,0,size / 9]),_U.list([size / 9,0,(0 - size) / 9]));
+      return $Graphics$Collage.group(A3($List.map2,F2(function (x,y) {    return x(y);}),A2($List.map,$Graphics$Collage.move,moveCoordinates),forms));
+   };
+   var printEntangeledEdge = function (_p14) {
+      var _p15 = _p14;
+      var _p17 = _p15.numberOfMove;
+      var _p16 = _p15.player;
+      if (_p16.ctor === "X") {
+            return A2($Graphics$Collage.scale,
+            1 / 3,
+            $Graphics$Collage.group(_U.list([xcross
+                                            ,A2($Graphics$Collage.move,
+                                            {ctor: "_Tuple2",_0: size / 9,_1: (0 - size) / 9},
+                                            A2($Graphics$Collage.scale,3,$Graphics$Collage.toForm($Graphics$Element.show(_p17))))])));
+         } else {
+            return A2($Graphics$Collage.scale,
+            1 / 3,
+            $Graphics$Collage.group(_U.list([ocircle
+                                            ,A2($Graphics$Collage.move,
+                                            {ctor: "_Tuple2",_0: size / 9,_1: (0 - size) / 9},
+                                            A2($Graphics$Collage.scale,3,$Graphics$Collage.toForm($Graphics$Element.show(_p17))))])));
+         }
+   };
+   var listEntangledNode = F2(function (_p18,edgelabels) {
+      var _p19 = _p18;
+      var _p20 = _p19.pos;
+      var col = _p20.col;
+      var row = _p20.row;
+      var moveToRightPosition = $Graphics$Collage.move({ctor: "_Tuple2"
+                                                       ,_0: 0 - size / 3 + ($Basics.toFloat(col) - 1) * (size / 3)
+                                                       ,_1: size / 3 - ($Basics.toFloat(row) - 1) * (size / 3)});
+      return A2($List.map,function (_p21) {    return moveToRightPosition(printEntangeledEdge(_p21));},edgelabels);
+   });
+   var printEntangeledMarks = function (field) {
+      var _p22 = field;
+      var nodes = _p22._0;
+      var edges = _p22._1;
+      return A2($List.map,function (_p23) {    return formatOneField(A2($Basics.uncurry,listEntangledNode,A2(extractOneNode,field,_p23)));},nodes);
+   };
+   var view = function (state) {
+      var field = $GameLogic.returnField(state);
+      var collapseMessage = $GameLogic.isCollapseNecessary(field) ? "Collapse necessary" : "Please insert entangeled marks";
+      return A2($Graphics$Element.flow,
+      $Graphics$Element.down,
+      _U.list([$Graphics$Element.layers(_U.list([drawLines
+                                                ,A3($Graphics$Collage.collage,size,size,printClassicalMarks(field))
+                                                ,A3($Graphics$Collage.collage,size,size,printEntangeledMarks(field))]))
+              ,A4($Graphics$Element.container,size,40,$Graphics$Element.middle,$Graphics$Element.leftAligned($Text.fromString(stateDescription(state))))
+              ,A4($Graphics$Element.container,size,40,$Graphics$Element.middle,$Graphics$Element.leftAligned($Text.fromString(collapseMessage)))
+              ,A4($Graphics$Element.container,size,50,$Graphics$Element.middle,A2($Graphics$Element.flow,$Graphics$Element.right,_U.list([newGameButton])))
+              ,A3($Graphics$Collage.collage,
+              1500,
+              120,
+              _U.list([$Graphics$Collage.toForm($Graphics$Element.show(A2($GameLogic.reachableFromNode,field,testNode3)))]))]));
+   };
+   var getPosition = function (_p24) {
+      var _p25 = _p24;
+      var f = function (a) {    return _U.cmp(a,size / 3 | 0) < 0 ? 1 : _U.cmp(a,2 * size / 3 | 0) < 0 ? 2 : 3;};
+      return {col: f(_p25._0),row: f(_p25._1)};
+   };
+   var update = F2(function (_p27,_p26) {
+      var _p28 = _p27;
+      var _p34 = _p28._1;
+      var _p33 = _p28._0;
+      var _p29 = _p26;
+      var _p32 = _p29._0;
+      var nodeLabel = {pos: getPosition({ctor: "_Tuple2",_0: _p33,_1: _p34}),numberOfMove: $GameLogic.returnRound(_p32),player: $GameLogic.returnPlayer(_p32)};
+      var _p30 = _p29._1;
+      if (_p30.ctor === "Nothing") {
+            var _p31 = $GameLogic.isCollapseNecessary($GameLogic.returnField(_p32));
+            if (_p31 === true) {
+                  return {ctor: "_Tuple2"
+                         ,_0: A2($GameLogic.addMove,
+                         $GameLogic.Collapse({id: idFromPosition(getPosition({ctor: "_Tuple2",_0: _p33,_1: _p34})),label: nodeLabel}),
+                         _p32)
+                         ,_1: $Maybe.Nothing};
+               } else {
+                  return {ctor: "_Tuple2",_0: _p32,_1: $Maybe.Just({ctor: "_Tuple2",_0: _p33,_1: _p34})};
+               }
+         } else {
+            return {ctor: "_Tuple2"
+                   ,_0: A2($GameLogic.addMove,
+                   $GameLogic.Entangled({first: idFromPosition(getPosition({ctor: "_Tuple2",_0: _p33,_1: _p34}))
+                                        ,second: idFromPosition(getPosition({ctor: "_Tuple2",_0: _p30._0._0,_1: _p30._0._1}))
+                                        ,label: {numberOfMove: $GameLogic.returnRound(_p32),player: $GameLogic.unsafe($GameLogic.returnPlayer(_p32))}}),
+                   _p32)
+                   ,_1: $Maybe.Nothing};
+         }
+   });
+   var gameStateSignal = A3($Signal.foldp,update,{ctor: "_Tuple2",_0: $GameLogic.initialState,_1: $Maybe.Nothing},clickSignal);
+   var main = A2($Signal.map,view,A2($Signal.map,$Basics.fst,gameStateSignal));
+   return _elm.GameView.values = {_op: _op
+                                 ,size: size
+                                 ,drawLines: drawLines
+                                 ,xline: xline
+                                 ,xcross: xcross
+                                 ,ocircle: ocircle
+                                 ,printClassicalMarks: printClassicalMarks
+                                 ,extractOneNode: extractOneNode
+                                 ,printEntangeledMarks: printEntangeledMarks
+                                 ,printClassicalNode: printClassicalNode
+                                 ,formatOneField: formatOneField
+                                 ,listEntangledNode: listEntangledNode
+                                 ,printEntangeledEdge: printEntangeledEdge
+                                 ,stateDescription: stateDescription
+                                 ,newGameMailbox: newGameMailbox
+                                 ,newGameButton: newGameButton
+                                 ,view: view
+                                 ,clickSignal: clickSignal
+                                 ,newGameButtonSignal: newGameButtonSignal
+                                 ,update: update
+                                 ,getPosition: getPosition
+                                 ,idFromPosition: idFromPosition
+                                 ,gameStateSignal: gameStateSignal
+                                 ,main: main
+                                 ,testNode2: testNode2
+                                 ,testNode3: testNode3
+                                 ,testField: testField
+                                 ,testState: testState
+                                 ,testState2: testState2};
+};

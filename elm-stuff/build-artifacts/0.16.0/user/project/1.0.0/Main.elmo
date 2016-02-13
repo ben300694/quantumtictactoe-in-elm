@@ -1,0 +1,21 @@
+Elm.Main = Elm.Main || {};
+Elm.Main.make = function (_elm) {
+   "use strict";
+   _elm.Main = _elm.Main || {};
+   if (_elm.Main.values) return _elm.Main.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var diamond = F2(function (color,size) {
+      return A2($Graphics$Collage.rotate,$Basics.degrees(45),A2($Graphics$Collage.filled,color,$Graphics$Collage.square(size)));
+   });
+   var main = A3($Graphics$Collage.collage,200,200,_U.list([A2(diamond,$Color.blue,100),A2(diamond,$Color.red,75)]));
+   return _elm.Main.values = {_op: _op,diamond: diamond,main: main};
+};
