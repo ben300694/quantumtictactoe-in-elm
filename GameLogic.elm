@@ -132,17 +132,48 @@ adjacentNodes graph node =
 
 {- Checks via bfs if the graph contains a circle
 - Nothing if no circle can be found
-- A list of nodes of the circle (in the right order) and a list of edges (in the right order) in the circle
+- One node of the circle if a cycle can be found
+-
+- A connected undirected Graph contains a circle iff |E| >= |V|
 -}
 
 
-findCycle : Graph a e -> Maybe ( List (Node a), List (Edge e) )
-findCycle graph =
-  Nothing
+findComponentWithCycle : Graph a e -> Maybe (List (Node a))
+findComponentWithCycle graph = let
+    (nodes, edges) = graph
+    components = connectedComponents graph
+    componentsWithCycle = filter (\c -> (length <| edgesInComponent graph c) >= (length c)) components
+  in
+    case componentsWithCycle of
+        [] -> Nothing
+        (c::rest) -> Just c
+
+edgesInComponent : Graph a e -> List (Node a) -> List (Edge e)
+edgesInComponent (nodes, edges) component = let
+    nodeIds = List.map .id component
+  in
+    List.filter (\x -> (member x.first nodeIds) && (member x.second nodeIds)) edges 
+
+
+{-Gives a list of a list of nodes, each of the smaller lists is a connected component of the graph-}
+connectedComponents : Graph a e -> List (List (Node a))
+connectedComponents graph = let
+    (nodes, edges) = graph
+  in
+    case nodes of
+        [] -> []
+        (node::rest) -> let firstComp = reachableFromNode graph node in firstComp::(connectedComponents <| removeNodes graph firstComp)
+
+removeNodes : Graph a e -> List (Node a) -> Graph a e
+removeNodes graph toRemove = let
+    (nodes, edges) = graph
+  in
+    case toRemove of
+        [] -> graph
+        (node::rest) -> removeNodes (List.filter (\x -> x.id /= node.id) nodes, List.filter (\x -> (x.first /= node.id) && (x.second /= node.id)) edges) rest        
 
 
 
-{- TODO -}
 {- Gives all nodes reachable frome one specific node -}
 
 
@@ -365,19 +396,13 @@ isValidMove move state =
       Collapse node ->
         if (isCollapseNecessary field) then
           let
-            cycle =
-              unsafe <| findCycle field
-
-            ( cyclenodes, cycleedges ) =
-              cycle
-
-            potentialCollapsePoints =
-              reachableFromComponent field cyclenodes
+            componentWithCycle =
+              unsafe <| findComponentWithCycle field
 
             edgesIncidentToNode =
               incidentEdges field node
           in
-            if member node.id (List.map .id potentialCollapsePoints) && member (unsafe node.label.player) (List.map (\y -> y.label.player) edgesIncidentToNode) then
+            if member node.id (List.map .id componentWithCycle) && member (unsafe node.label.player) (List.map (\y -> y.label.player) edgesIncidentToNode) then
               True
             else
               False
@@ -391,7 +416,7 @@ isValidMove move state =
 
 isCollapseNecessary : Field -> Bool
 isCollapseNecessary field =
-  isJust <| findCycle field
+  isJust <| findComponentWithCycle field
 
 
 
@@ -449,17 +474,11 @@ checkIfFinished state =
 
     NotFinishedGame player field moves round ->
       NotFinishedGame player field moves round
-
-
-
 {- TODO -}
+
+
+
 {- -}
---performEntireCollapse : Field -> Field
-
-
+performEntireCollapse : Field -> Field
 performEntireCollapse field =
-  field
-
-
-
-{- TODO -}
+  field {- TODO -}
