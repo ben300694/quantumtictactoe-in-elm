@@ -1,0 +1,145 @@
+Elm.Graph = Elm.Graph || {};
+Elm.Graph.make = function (_elm) {
+   "use strict";
+   _elm.Graph = _elm.Graph || {};
+   if (_elm.Graph.values) return _elm.Graph.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Helpers = Elm.Helpers.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var updateNode = F2(function (node,nodes) {    return A2($List.map,function (x) {    return _U.eq(x.id,node.id) ? node : x;},nodes);});
+   var removeEdge = F2(function (graph,edge) {
+      var _p0 = graph;
+      var nodes = _p0._0;
+      var edges = _p0._1;
+      return {ctor: "_Tuple2",_0: nodes,_1: A2($List.filter,function (x) {    return !_U.eq(x,edge);},edges)};
+   });
+   var removeNodes = F2(function (graph,toRemove) {
+      removeNodes: while (true) {
+         var _p1 = graph;
+         var nodes = _p1._0;
+         var edges = _p1._1;
+         var _p2 = toRemove;
+         if (_p2.ctor === "[]") {
+               return graph;
+            } else {
+               var _p3 = _p2._0;
+               var _v1 = {ctor: "_Tuple2"
+                         ,_0: A2($List.filter,function (x) {    return !_U.eq(x.id,_p3.id);},nodes)
+                         ,_1: A2($List.filter,function (x) {    return !_U.eq(x.first,_p3.id) && !_U.eq(x.second,_p3.id);},edges)},
+               _v2 = _p2._1;
+               graph = _v1;
+               toRemove = _v2;
+               continue removeNodes;
+            }
+      }
+   });
+   var edgesInComponent = F2(function (_p4,component) {
+      var _p5 = _p4;
+      var nodeIds = A2($List.map,function (_) {    return _.id;},component);
+      return A2($List.filter,function (x) {    return A2($List.member,x.first,nodeIds) && A2($List.member,x.second,nodeIds);},_p5._1);
+   });
+   var incidentEdges = F2(function (graph,_p6) {
+      var _p7 = _p6;
+      var _p9 = _p7.id;
+      var f = function (x) {    return _U.eq(x.first,_p9) || _U.eq(x.second,_p9);};
+      var _p8 = graph;
+      var edges = _p8._1;
+      return A2($List.filter,f,edges);
+   });
+   var getNodeFromId = F2(function (graph,nodeid) {
+      var _p10 = graph;
+      var nodes = _p10._0;
+      var edges = _p10._1;
+      return $List.head(A2($List.filter,function (x) {    return _U.eq(x.id,nodeid);},nodes));
+   });
+   var adjacentNodes = F2(function (graph,node) {
+      var _p11 = graph;
+      var nodes = _p11._0;
+      var edges = _p11._1;
+      return A2($List.map,
+      $Helpers.unsafe,
+      A2($List.filter,
+      $Helpers.isJust,
+      A2($List.map,
+      getNodeFromId(graph),
+      A2($List.filter,
+      function (x) {
+         return !_U.eq(x,node.id) ? true : false;
+      },
+      $Helpers.removeDuplicates(A2($List.concatMap,function (ed) {    return _U.list([ed.first,ed.second]);},A2(incidentEdges,graph,node)))))));
+   });
+   var reachableFromNode$ = F3(function (graph,node,visited) {
+      if (A2($List.member,node,visited)) return visited; else {
+            var _p12 = A2($List.filter,function (x) {    return $Basics.not(A2($List.member,x,visited));},A2(adjacentNodes,graph,node));
+            if (_p12.ctor === "[]") {
+                  return A2($List._op["::"],node,visited);
+               } else {
+                  return A3(visitfold,graph,_p12,A2($List._op["::"],node,visited));
+               }
+         }
+   });
+   var visitfold = F3(function (graph,list,visited) {
+      visitfold: while (true) {
+         var _p13 = list;
+         if (_p13.ctor === "[]") {
+               return visited;
+            } else {
+               var _v7 = graph,_v8 = _p13._1,_v9 = A3(reachableFromNode$,graph,_p13._0,visited);
+               graph = _v7;
+               list = _v8;
+               visited = _v9;
+               continue visitfold;
+            }
+      }
+   });
+   var reachableFromNode = F2(function (graph,node) {    return A3(reachableFromNode$,graph,node,_U.list([]));});
+   var connectedComponents = function (graph) {
+      var _p14 = graph;
+      var nodes = _p14._0;
+      var edges = _p14._1;
+      var _p15 = nodes;
+      if (_p15.ctor === "[]") {
+            return _U.list([]);
+         } else {
+            var firstComp = A2(reachableFromNode,graph,_p15._0);
+            return A2($List._op["::"],firstComp,connectedComponents(A2(removeNodes,graph,firstComp)));
+         }
+   };
+   var findComponentWithCycle = function (graph) {
+      var components = connectedComponents(graph);
+      var componentsWithCycle = A2($List.filter,function (c) {    return _U.cmp($List.length(A2(edgesInComponent,graph,c)),$List.length(c)) > -1;},components);
+      return $List.head(componentsWithCycle);
+   };
+   var reachableFromComponent = F2(function (graph,nodes) {
+      var _p16 = nodes;
+      if (_p16.ctor === "[]") {
+            return _U.list([]);
+         } else {
+            return A2(reachableFromNode,graph,_p16._0);
+         }
+   });
+   var Edge = F3(function (a,b,c) {    return {first: a,second: b,label: c};});
+   var Node = F2(function (a,b) {    return {id: a,label: b};});
+   return _elm.Graph.values = {_op: _op
+                              ,Node: Node
+                              ,Edge: Edge
+                              ,getNodeFromId: getNodeFromId
+                              ,incidentEdges: incidentEdges
+                              ,adjacentNodes: adjacentNodes
+                              ,findComponentWithCycle: findComponentWithCycle
+                              ,edgesInComponent: edgesInComponent
+                              ,connectedComponents: connectedComponents
+                              ,removeNodes: removeNodes
+                              ,removeEdge: removeEdge
+                              ,reachableFromNode: reachableFromNode
+                              ,reachableFromNode$: reachableFromNode$
+                              ,visitfold: visitfold
+                              ,reachableFromComponent: reachableFromComponent
+                              ,updateNode: updateNode};
+};

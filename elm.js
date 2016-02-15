@@ -5982,11 +5982,11 @@ Elm.Mouse.make = function (_elm) {
    var y = A2($Signal.map,$Basics.snd,position);
    return _elm.Mouse.values = {_op: _op,position: position,x: x,y: y,isDown: isDown,clicks: clicks};
 };
-Elm.GameLogic = Elm.GameLogic || {};
-Elm.GameLogic.make = function (_elm) {
+Elm.Helpers = Elm.Helpers || {};
+Elm.Helpers.make = function (_elm) {
    "use strict";
-   _elm.GameLogic = _elm.GameLogic || {};
-   if (_elm.GameLogic.values) return _elm.GameLogic.values;
+   _elm.Helpers = _elm.Helpers || {};
+   if (_elm.Helpers.values) return _elm.Helpers.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
@@ -5995,48 +5995,287 @@ Elm.GameLogic.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var performEntireCollapse = function (field) {    return field;};
+   var tuples = F2(function (xs,ys) {
+      return A2($List.concatMap,function (x) {    return A2($List.map,function (y) {    return {ctor: "_Tuple2",_0: x,_1: y};},ys);},xs);
+   });
+   var zip = $List.map2(F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}));
+   var unsafe = function (v) {
+      var _p0 = v;
+      if (_p0.ctor === "Just") {
+            return _p0._0;
+         } else {
+            return _U.crashCase("Helpers",{start: {line: 28,column: 3},end: {line: 33,column: 40}},_p0)("unsafe with Nothing");
+         }
+   };
+   var isJust = function (a) {    var _p2 = a;if (_p2.ctor === "Just") {    return true;} else {    return false;}};
+   var removeDuplicates = function (list) {
+      removeDuplicates: while (true) {
+         var _p3 = list;
+         if (_p3.ctor === "[]") {
+               return _U.list([]);
+            } else {
+               var _p5 = _p3._1;
+               var _p4 = _p3._0;
+               if (A2($List.member,_p4,_p5)) {
+                     var _v3 = _p5;
+                     list = _v3;
+                     continue removeDuplicates;
+                  } else return A2($List._op["::"],_p4,removeDuplicates(_p5));
+            }
+      }
+   };
+   return _elm.Helpers.values = {_op: _op,removeDuplicates: removeDuplicates,isJust: isJust,unsafe: unsafe,zip: zip,tuples: tuples};
+};
+Elm.Graph = Elm.Graph || {};
+Elm.Graph.make = function (_elm) {
+   "use strict";
+   _elm.Graph = _elm.Graph || {};
+   if (_elm.Graph.values) return _elm.Graph.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Helpers = Elm.Helpers.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
    var updateNode = F2(function (node,nodes) {    return A2($List.map,function (x) {    return _U.eq(x.id,node.id) ? node : x;},nodes);});
+   var removeEdge = F2(function (graph,edge) {
+      var _p0 = graph;
+      var nodes = _p0._0;
+      var edges = _p0._1;
+      return {ctor: "_Tuple2",_0: nodes,_1: A2($List.filter,function (x) {    return !_U.eq(x,edge);},edges)};
+   });
+   var removeNodes = F2(function (graph,toRemove) {
+      removeNodes: while (true) {
+         var _p1 = graph;
+         var nodes = _p1._0;
+         var edges = _p1._1;
+         var _p2 = toRemove;
+         if (_p2.ctor === "[]") {
+               return graph;
+            } else {
+               var _p3 = _p2._0;
+               var _v1 = {ctor: "_Tuple2"
+                         ,_0: A2($List.filter,function (x) {    return !_U.eq(x.id,_p3.id);},nodes)
+                         ,_1: A2($List.filter,function (x) {    return !_U.eq(x.first,_p3.id) && !_U.eq(x.second,_p3.id);},edges)},
+               _v2 = _p2._1;
+               graph = _v1;
+               toRemove = _v2;
+               continue removeNodes;
+            }
+      }
+   });
+   var edgesInComponent = F2(function (_p4,component) {
+      var _p5 = _p4;
+      var nodeIds = A2($List.map,function (_) {    return _.id;},component);
+      return A2($List.filter,function (x) {    return A2($List.member,x.first,nodeIds) && A2($List.member,x.second,nodeIds);},_p5._1);
+   });
+   var incidentEdges = F2(function (graph,_p6) {
+      var _p7 = _p6;
+      var _p9 = _p7.id;
+      var f = function (x) {    return _U.eq(x.first,_p9) || _U.eq(x.second,_p9);};
+      var _p8 = graph;
+      var edges = _p8._1;
+      return A2($List.filter,f,edges);
+   });
+   var getNodeFromId = F2(function (graph,nodeid) {
+      var _p10 = graph;
+      var nodes = _p10._0;
+      var edges = _p10._1;
+      return $List.head(A2($List.filter,function (x) {    return _U.eq(x.id,nodeid);},nodes));
+   });
+   var adjacentNodes = F2(function (graph,node) {
+      var _p11 = graph;
+      var nodes = _p11._0;
+      var edges = _p11._1;
+      return A2($List.map,
+      $Helpers.unsafe,
+      A2($List.filter,
+      $Helpers.isJust,
+      A2($List.map,
+      getNodeFromId(graph),
+      A2($List.filter,
+      function (x) {
+         return !_U.eq(x,node.id) ? true : false;
+      },
+      $Helpers.removeDuplicates(A2($List.concatMap,function (ed) {    return _U.list([ed.first,ed.second]);},A2(incidentEdges,graph,node)))))));
+   });
+   var reachableFromNode$ = F3(function (graph,node,visited) {
+      if (A2($List.member,node,visited)) return visited; else {
+            var _p12 = A2($List.filter,function (x) {    return $Basics.not(A2($List.member,x,visited));},A2(adjacentNodes,graph,node));
+            if (_p12.ctor === "[]") {
+                  return A2($List._op["::"],node,visited);
+               } else {
+                  return A3(visitfold,graph,_p12,A2($List._op["::"],node,visited));
+               }
+         }
+   });
+   var visitfold = F3(function (graph,list,visited) {
+      visitfold: while (true) {
+         var _p13 = list;
+         if (_p13.ctor === "[]") {
+               return visited;
+            } else {
+               var _v7 = graph,_v8 = _p13._1,_v9 = A3(reachableFromNode$,graph,_p13._0,visited);
+               graph = _v7;
+               list = _v8;
+               visited = _v9;
+               continue visitfold;
+            }
+      }
+   });
+   var reachableFromNode = F2(function (graph,node) {    return A3(reachableFromNode$,graph,node,_U.list([]));});
+   var connectedComponents = function (graph) {
+      var _p14 = graph;
+      var nodes = _p14._0;
+      var edges = _p14._1;
+      var _p15 = nodes;
+      if (_p15.ctor === "[]") {
+            return _U.list([]);
+         } else {
+            var firstComp = A2(reachableFromNode,graph,_p15._0);
+            return A2($List._op["::"],firstComp,connectedComponents(A2(removeNodes,graph,firstComp)));
+         }
+   };
+   var findComponentWithCycle = function (graph) {
+      var components = connectedComponents(graph);
+      var componentsWithCycle = A2($List.filter,function (c) {    return _U.cmp($List.length(A2(edgesInComponent,graph,c)),$List.length(c)) > -1;},components);
+      return $List.head(componentsWithCycle);
+   };
+   var reachableFromComponent = F2(function (graph,nodes) {
+      var _p16 = nodes;
+      if (_p16.ctor === "[]") {
+            return _U.list([]);
+         } else {
+            return A2(reachableFromNode,graph,_p16._0);
+         }
+   });
+   var Edge = F3(function (a,b,c) {    return {first: a,second: b,label: c};});
+   var Node = F2(function (a,b) {    return {id: a,label: b};});
+   return _elm.Graph.values = {_op: _op
+                              ,Node: Node
+                              ,Edge: Edge
+                              ,getNodeFromId: getNodeFromId
+                              ,incidentEdges: incidentEdges
+                              ,adjacentNodes: adjacentNodes
+                              ,findComponentWithCycle: findComponentWithCycle
+                              ,edgesInComponent: edgesInComponent
+                              ,connectedComponents: connectedComponents
+                              ,removeNodes: removeNodes
+                              ,removeEdge: removeEdge
+                              ,reachableFromNode: reachableFromNode
+                              ,reachableFromNode$: reachableFromNode$
+                              ,visitfold: visitfold
+                              ,reachableFromComponent: reachableFromComponent
+                              ,updateNode: updateNode};
+};
+Elm.GameLogic = Elm.GameLogic || {};
+Elm.GameLogic.make = function (_elm) {
+   "use strict";
+   _elm.GameLogic = _elm.GameLogic || {};
+   if (_elm.GameLogic.values) return _elm.GameLogic.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Graph = Elm.Graph.make(_elm),
+   $Helpers = Elm.Helpers.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var performEntireCollapse = function (field) {    var _p0 = field;var nodes = _p0._0;var edges = _p0._1;return field;};
+   var replaceNode = F3(function (field,node,p) {
+      var l = node.label;
+      var newNumberOfMove = $Helpers.unsafe($List.maximum(A2($List.map,
+      function (x) {
+         return x.label.numberOfMove;
+      },
+      A2($List.filter,function (x) {    return _U.eq(x.label.player,$Helpers.unsafe(node.label.player));},A2($Graph.incidentEdges,field,node)))));
+      var newLabel = _U.update(l,{numberOfMove: newNumberOfMove,player: $Maybe.Just(p)});
+      var newNode = _U.update(node,{label: newLabel});
+      var _p1 = field;
+      var nodes = _p1._0;
+      var edges = _p1._1;
+      return {ctor: "_Tuple2",_0: A2($Graph.updateNode,newNode,nodes),_1: edges};
+   });
+   var collapseOneEdge = F2(function (field,edge) {
+      var edgePlayer = edge.label.player;
+      var secondNode = $Helpers.unsafe(A2($Graph.getNodeFromId,field,edge.second));
+      var firstNode = $Helpers.unsafe(A2($Graph.getNodeFromId,field,edge.first));
+      var _p2 = field;
+      var nodes = _p2._0;
+      var edges = _p2._1;
+      var _p3 = firstNode.label.player;
+      if (_p3.ctor === "Nothing") {
+            var _p4 = secondNode.label.player;
+            if (_p4.ctor === "Nothing") {
+                  return field;
+               } else {
+                  return _U.eq(_p4._0,edgePlayer) ? A2($Graph.removeEdge,field,edge) : A2($Graph.removeEdge,A3(replaceNode,field,firstNode,edgePlayer),edge);
+               }
+         } else {
+            return _U.eq(_p3._0,edgePlayer) ? A2($Graph.removeEdge,field,edge) : A2($Graph.removeEdge,A3(replaceNode,field,secondNode,edgePlayer),edge);
+         }
+   });
+   var isCollapseNecessary = function (field) {    return $Helpers.isJust($Graph.findComponentWithCycle(field));};
    var isEdgeOnField = F2(function (edge,field) {
       var condition = function (x) {
          return (_U.eq(x.first,edge.first) && _U.eq(x.second,edge.second) || _U.eq(x.first,edge.second) && _U.eq(x.second,
          edge.first)) && _U.eq(edge.label.player,x.label.player);
       };
-      var _p0 = field;
-      var nodes = _p0._0;
-      var edges = _p0._1;
+      var _p5 = field;
+      var nodes = _p5._0;
+      var edges = _p5._1;
       return $Basics.not($List.isEmpty(A2($List.filter,condition,edges)));
    });
-   var tuples = F2(function (xs,ys) {
-      return A2($List.concatMap,function (x) {    return A2($List.map,function (y) {    return {ctor: "_Tuple2",_0: x,_1: y};},ys);},xs);
-   });
-   var fieldNumbers = A2(tuples,_U.range(1,3),_U.range(1,3));
-   var zip = $List.map2(F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}));
-   var nodeConstr = function (_p1) {
-      var _p2 = _p1;
-      return {id: _p2._0,label: {pos: {col: _p2._1._0,row: _p2._1._1},numberOfMove: -1,player: $Maybe.Nothing}};
+   var fieldNumbers = A2($Helpers.tuples,_U.range(1,3),_U.range(1,3));
+   var nodeConstr = function (_p6) {
+      var _p7 = _p6;
+      return {id: _p7._0,label: {pos: {col: _p7._1._0,row: _p7._1._1},numberOfMove: -1,player: $Maybe.Nothing}};
    };
-   var nodes = A2($List.map,nodeConstr,A2(zip,_U.range(1,9),fieldNumbers));
+   var nodes = A2($List.map,nodeConstr,A2($Helpers.zip,_U.range(1,9),fieldNumbers));
    var emptyField = {ctor: "_Tuple2",_0: nodes,_1: _U.list([])};
-   var returnMoves = function (state) {    var _p3 = state;if (_p3.ctor === "FinishedGame") {    return _p3._2;} else {    return _p3._2;}};
+   var returnMoves = function (state) {    var _p8 = state;if (_p8.ctor === "FinishedGame") {    return _p8._2;} else {    return _p8._2;}};
    var returnPlayer = function (state) {
-      var _p4 = state;
-      if (_p4.ctor === "FinishedGame") {
+      var _p9 = state;
+      if (_p9.ctor === "FinishedGame") {
             return $Maybe.Nothing;
          } else {
-            return $Maybe.Just(_p4._0);
+            return $Maybe.Just(_p9._0);
          }
    };
-   var returnRound = function (state) {    var _p5 = state;if (_p5.ctor === "FinishedGame") {    return 0;} else {    return _p5._3;}};
-   var returnField = function (state) {    var _p6 = state;if (_p6.ctor === "FinishedGame") {    return _p6._1;} else {    return _p6._1;}};
+   var returnRound = function (state) {    var _p10 = state;if (_p10.ctor === "FinishedGame") {    return 0;} else {    return _p10._3;}};
+   var returnField = function (state) {    var _p11 = state;if (_p11.ctor === "FinishedGame") {    return _p11._1;} else {    return _p11._1;}};
+   var isValidMove = F2(function (move,state) {
+      var field = returnField(state);
+      var _p12 = field;
+      var nodes = _p12._0;
+      var edges = _p12._1;
+      var _p13 = move;
+      if (_p13.ctor === "Entangled") {
+            return isCollapseNecessary(field) ? false : $Basics.not(A2(isEdgeOnField,_p13._0,field));
+         } else {
+            var _p14 = _p13._0;
+            if (isCollapseNecessary(field)) {
+                  var edgesIncidentToNode = A2($Graph.incidentEdges,field,_p14);
+                  var componentWithCycle = $Helpers.unsafe($Graph.findComponentWithCycle(field));
+                  return A2($List.member,_p14.id,A2($List.map,function (_) {    return _.id;},componentWithCycle)) && A2($List.member,
+                  $Helpers.unsafe(_p14.label.player),
+                  A2($List.map,function (y) {    return y.label.player;},edgesIncidentToNode)) ? true : false;
+               } else return false;
+         }
+   });
    var NotFinishedGame = F4(function (a,b,c,d) {    return {ctor: "NotFinishedGame",_0: a,_1: b,_2: c,_3: d};});
    var FinishedGame = F3(function (a,b,c) {    return {ctor: "FinishedGame",_0: a,_1: b,_2: c};});
    var checkIfFinished = function (state) {
-      var _p7 = state;
-      if (_p7.ctor === "FinishedGame") {
-            return A3(FinishedGame,_p7._0,_p7._1,_p7._2);
+      var _p15 = state;
+      if (_p15.ctor === "FinishedGame") {
+            return A3(FinishedGame,_p15._0,_p15._1,_p15._2);
          } else {
-            return A4(NotFinishedGame,_p7._0,_p7._1,_p7._2,_p7._3);
+            return A4(NotFinishedGame,_p15._0,_p15._1,_p15._2,_p15._3);
          }
    };
    var Collapse = function (a) {    return {ctor: "Collapse",_0: a};};
@@ -6044,219 +6283,44 @@ Elm.GameLogic.make = function (_elm) {
    var EdgeLabel = F2(function (a,b) {    return {numberOfMove: a,player: b};});
    var NodeLabel = F3(function (a,b,c) {    return {pos: a,numberOfMove: b,player: c};});
    var Position = F2(function (a,b) {    return {col: a,row: b};});
-   var removeNodes = F2(function (graph,toRemove) {
-      removeNodes: while (true) {
-         var _p8 = graph;
-         var nodes = _p8._0;
-         var edges = _p8._1;
-         var _p9 = toRemove;
-         if (_p9.ctor === "[]") {
-               return graph;
-            } else {
-               var _p10 = _p9._0;
-               var _v7 = {ctor: "_Tuple2"
-                         ,_0: A2($List.filter,function (x) {    return !_U.eq(x.id,_p10.id);},nodes)
-                         ,_1: A2($List.filter,function (x) {    return !_U.eq(x.first,_p10.id) && !_U.eq(x.second,_p10.id);},edges)},
-               _v8 = _p9._1;
-               graph = _v7;
-               toRemove = _v8;
-               continue removeNodes;
-            }
-      }
-   });
-   var edgesInComponent = F2(function (_p11,component) {
-      var _p12 = _p11;
-      var nodeIds = A2($List.map,function (_) {    return _.id;},component);
-      return A2($List.filter,function (x) {    return A2($List.member,x.first,nodeIds) && A2($List.member,x.second,nodeIds);},_p12._1);
-   });
-   var incidentEdges = F2(function (graph,_p13) {
-      var _p14 = _p13;
-      var _p16 = _p14.id;
-      var f = function (x) {    return _U.eq(x.first,_p16) || _U.eq(x.second,_p16);};
-      var _p15 = graph;
-      var edges = _p15._1;
-      return A2($List.filter,f,edges);
-   });
-   var getNodeFromId = F2(function (graph,nodeid) {
-      var _p17 = graph;
-      var nodes = _p17._0;
-      var edges = _p17._1;
-      return $List.head(A2($List.filter,function (x) {    return _U.eq(x.id,nodeid);},nodes));
-   });
-   var Edge = F3(function (a,b,c) {    return {first: a,second: b,label: c};});
-   var Node = F2(function (a,b) {    return {id: a,label: b};});
    var Winner = function (a) {    return {ctor: "Winner",_0: a};};
    var Tie = function (a) {    return {ctor: "Tie",_0: a};};
    var Draw = {ctor: "Draw"};
    var X = {ctor: "X"};
    var initialState = A4(NotFinishedGame,X,emptyField,_U.list([]),0);
    var O = {ctor: "O"};
-   var switchPlayer = function (p) {    var _p18 = p;if (_p18.ctor === "X") {    return O;} else {    return X;}};
-   var unsafe = function (v) {
-      var _p19 = v;
-      if (_p19.ctor === "Just") {
-            return _p19._0;
-         } else {
-            return _U.crashCase("GameLogic",{start: {line: 33,column: 3},end: {line: 38,column: 40}},_p19)("unsafe with Nothing");
-         }
-   };
-   var isJust = function (a) {    var _p21 = a;if (_p21.ctor === "Just") {    return true;} else {    return false;}};
-   var removeDuplicates = function (list) {
-      removeDuplicates: while (true) {
-         var _p22 = list;
-         if (_p22.ctor === "[]") {
-               return _U.list([]);
-            } else {
-               var _p24 = _p22._1;
-               var _p23 = _p22._0;
-               if (A2($List.member,_p23,_p24)) {
-                     var _v15 = _p24;
-                     list = _v15;
-                     continue removeDuplicates;
-                  } else return A2($List._op["::"],_p23,removeDuplicates(_p24));
-            }
-      }
-   };
-   var adjacentNodes = F2(function (graph,node) {
-      var _p25 = graph;
-      var nodes = _p25._0;
-      var edges = _p25._1;
-      return A2($List.map,
-      unsafe,
-      A2($List.filter,
-      isJust,
-      A2($List.map,
-      getNodeFromId(graph),
-      A2($List.filter,
-      function (x) {
-         return !_U.eq(x,node.id) ? true : false;
-      },
-      removeDuplicates(A2($List.concatMap,function (ed) {    return _U.list([ed.first,ed.second]);},A2(incidentEdges,graph,node)))))));
-   });
-   var reachableFromNode$ = F3(function (graph,node,visited) {
-      if (A2($List.member,node,visited)) return visited; else {
-            var _p26 = A2($List.filter,function (x) {    return $Basics.not(A2($List.member,x,visited));},A2(adjacentNodes,graph,node));
-            if (_p26.ctor === "[]") {
-                  return A2($List._op["::"],node,visited);
-               } else {
-                  return A3(visitfold,graph,_p26,A2($List._op["::"],node,visited));
-               }
-         }
-   });
-   var visitfold = F3(function (graph,list,visited) {
-      visitfold: while (true) {
-         var _p27 = list;
-         if (_p27.ctor === "[]") {
-               return visited;
-            } else {
-               var _v18 = graph,_v19 = _p27._1,_v20 = A3(reachableFromNode$,graph,_p27._0,visited);
-               graph = _v18;
-               list = _v19;
-               visited = _v20;
-               continue visitfold;
-            }
-      }
-   });
-   var reachableFromNode = F2(function (graph,node) {    return A3(reachableFromNode$,graph,node,_U.list([]));});
-   var connectedComponents = function (graph) {
-      var _p28 = graph;
-      var nodes = _p28._0;
-      var edges = _p28._1;
-      var _p29 = nodes;
-      if (_p29.ctor === "[]") {
-            return _U.list([]);
-         } else {
-            var firstComp = A2(reachableFromNode,graph,_p29._0);
-            return A2($List._op["::"],firstComp,connectedComponents(A2(removeNodes,graph,firstComp)));
-         }
-   };
-   var findComponentWithCycle = function (graph) {
-      var components = connectedComponents(graph);
-      var componentsWithCycle = A2($List.filter,function (c) {    return _U.cmp($List.length(A2(edgesInComponent,graph,c)),$List.length(c)) > -1;},components);
-      var _p30 = graph;
-      var nodes = _p30._0;
-      var edges = _p30._1;
-      var _p31 = componentsWithCycle;
-      if (_p31.ctor === "[]") {
-            return $Maybe.Nothing;
-         } else {
-            return $Maybe.Just(_p31._0);
-         }
-   };
-   var isCollapseNecessary = function (field) {    return isJust(findComponentWithCycle(field));};
-   var isValidMove = F2(function (move,state) {
-      var field = returnField(state);
-      var _p32 = field;
-      var nodes = _p32._0;
-      var edges = _p32._1;
-      var _p33 = move;
-      if (_p33.ctor === "Entangled") {
-            return isCollapseNecessary(field) ? false : $Basics.not(A2(isEdgeOnField,_p33._0,field));
-         } else {
-            var _p34 = _p33._0;
-            if (isCollapseNecessary(field)) {
-                  var edgesIncidentToNode = A2(incidentEdges,field,_p34);
-                  var componentWithCycle = unsafe(findComponentWithCycle(field));
-                  return A2($List.member,_p34.id,A2($List.map,function (_) {    return _.id;},componentWithCycle)) && A2($List.member,
-                  unsafe(_p34.label.player),
-                  A2($List.map,function (y) {    return y.label.player;},edgesIncidentToNode)) ? true : false;
-               } else return false;
-         }
-   });
+   var switchPlayer = function (p) {    var _p16 = p;if (_p16.ctor === "X") {    return O;} else {    return X;}};
    var addMove = F2(function (move,state) {
       var field = returnField(state);
-      var _p35 = field;
-      var nodes = _p35._0;
-      var edges = _p35._1;
+      var _p17 = field;
+      var nodes = _p17._0;
+      var edges = _p17._1;
       return A2(isValidMove,move,state) ? checkIfFinished(function () {
-         var _p36 = move;
-         if (_p36.ctor === "Entangled") {
+         var _p18 = move;
+         if (_p18.ctor === "Entangled") {
                return A4(NotFinishedGame,
-               switchPlayer(unsafe(returnPlayer(state))),
+               switchPlayer($Helpers.unsafe(returnPlayer(state))),
                {ctor: "_Tuple2"
                ,_0: nodes
-               ,_1: A2($List._op["::"],_U.update(_p36._0,{label: {numberOfMove: returnRound(state),player: unsafe(returnPlayer(state))}}),edges)},
+               ,_1: A2($List._op["::"],_U.update(_p18._0,{label: {numberOfMove: returnRound(state),player: $Helpers.unsafe(returnPlayer(state))}}),edges)},
                A2($List._op["::"],move,returnMoves(state)),
                returnRound(state) + 1);
             } else {
+               var _p19 = _p18._0;
                return A4(NotFinishedGame,
-               unsafe(returnPlayer(state)),
-               {ctor: "_Tuple2",_0: A2(updateNode,_p36._0,nodes),_1: edges},
+               $Helpers.unsafe(returnPlayer(state)),
+               performEntireCollapse(A3(replaceNode,field,_p19,$Helpers.unsafe(_p19.label.player))),
                A2($List._op["::"],move,returnMoves(state)),
                returnRound(state));
             }
       }()) : state;
    });
-   var reachableFromComponent = F2(function (graph,nodes) {
-      var _p37 = nodes;
-      if (_p37.ctor === "[]") {
-            return _U.list([]);
-         } else {
-            return A2(reachableFromNode,graph,_p37._0);
-         }
-   });
    return _elm.GameLogic.values = {_op: _op
-                                  ,removeDuplicates: removeDuplicates
-                                  ,isJust: isJust
-                                  ,unsafe: unsafe
                                   ,O: O
                                   ,X: X
                                   ,Draw: Draw
                                   ,Tie: Tie
                                   ,Winner: Winner
-                                  ,Node: Node
-                                  ,Edge: Edge
-                                  ,getNodeFromId: getNodeFromId
-                                  ,incidentEdges: incidentEdges
-                                  ,adjacentNodes: adjacentNodes
-                                  ,findComponentWithCycle: findComponentWithCycle
-                                  ,edgesInComponent: edgesInComponent
-                                  ,connectedComponents: connectedComponents
-                                  ,removeNodes: removeNodes
-                                  ,reachableFromNode: reachableFromNode
-                                  ,reachableFromNode$: reachableFromNode$
-                                  ,visitfold: visitfold
-                                  ,reachableFromComponent: reachableFromComponent
                                   ,Position: Position
                                   ,NodeLabel: NodeLabel
                                   ,EdgeLabel: EdgeLabel
@@ -6270,8 +6334,6 @@ Elm.GameLogic.make = function (_elm) {
                                   ,returnMoves: returnMoves
                                   ,switchPlayer: switchPlayer
                                   ,nodeConstr: nodeConstr
-                                  ,zip: zip
-                                  ,tuples: tuples
                                   ,fieldNumbers: fieldNumbers
                                   ,nodes: nodes
                                   ,emptyField: emptyField
@@ -6280,9 +6342,10 @@ Elm.GameLogic.make = function (_elm) {
                                   ,isValidMove: isValidMove
                                   ,isCollapseNecessary: isCollapseNecessary
                                   ,addMove: addMove
-                                  ,updateNode: updateNode
+                                  ,replaceNode: replaceNode
                                   ,checkIfFinished: checkIfFinished
-                                  ,performEntireCollapse: performEntireCollapse};
+                                  ,performEntireCollapse: performEntireCollapse
+                                  ,collapseOneEdge: collapseOneEdge};
 };
 Elm.GameView = Elm.GameView || {};
 Elm.GameView.make = function (_elm) {
@@ -6294,9 +6357,11 @@ Elm.GameView.make = function (_elm) {
    $Color = Elm.Color.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $GameLogic = Elm.GameLogic.make(_elm),
+   $Graph = Elm.Graph.make(_elm),
    $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
    $Graphics$Input = Elm.Graphics.Input.make(_elm),
+   $Helpers = Elm.Helpers.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Mouse = Elm.Mouse.make(_elm),
@@ -6351,7 +6416,7 @@ Elm.GameView.make = function (_elm) {
       var _p6 = field;
       var nodes = _p6._0;
       var edges = _p6._1;
-      return {ctor: "_Tuple2",_0: label,_1: A2($List.map,function (_) {    return _.label;},A2($GameLogic.incidentEdges,field,node))};
+      return {ctor: "_Tuple2",_0: label,_1: A2($List.map,function (_) {    return _.label;},A2($Graph.incidentEdges,field,node))};
    });
    var size = 600;
    var drawLines = A3($Graphics$Collage.collage,
@@ -6407,7 +6472,7 @@ Elm.GameView.make = function (_elm) {
       return A2($List.map,function (_p13) {    return $Graphics$Collage.group(printClassicalNode(function (_) {    return _.label;}(_p13)));},nodes);
    };
    var formatOneField = function (forms) {
-      var moveCoordinates = A2($GameLogic.tuples,_U.list([(0 - size) / 9,0,size / 9]),_U.list([size / 9,0,(0 - size) / 9]));
+      var moveCoordinates = A2($Helpers.tuples,_U.list([(0 - size) / 9,0,size / 9]),_U.list([size / 9,0,(0 - size) / 9]));
       return $Graphics$Collage.group(A3($List.map2,F2(function (x,y) {    return x(y);}),A2($List.map,$Graphics$Collage.move,moveCoordinates),forms));
    };
    var printEntangeledEdge = function (_p14) {
@@ -6460,7 +6525,7 @@ Elm.GameView.make = function (_elm) {
               ,A3($Graphics$Collage.collage,
               1500,
               120,
-              _U.list([$Graphics$Collage.toForm($Graphics$Element.show(A2($GameLogic.reachableFromNode,field,testNode3)))]))]));
+              _U.list([$Graphics$Collage.toForm($Graphics$Element.show(A2($Graph.reachableFromNode,field,testNode3)))]))]));
    };
    var getPosition = function (_p24) {
       var _p25 = _p24;
@@ -6491,7 +6556,7 @@ Elm.GameView.make = function (_elm) {
                    ,_0: A2($GameLogic.addMove,
                    $GameLogic.Entangled({first: idFromPosition(getPosition({ctor: "_Tuple2",_0: _p33,_1: _p34}))
                                         ,second: idFromPosition(getPosition({ctor: "_Tuple2",_0: _p30._0._0,_1: _p30._0._1}))
-                                        ,label: {numberOfMove: $GameLogic.returnRound(_p32),player: $GameLogic.unsafe($GameLogic.returnPlayer(_p32))}}),
+                                        ,label: {numberOfMove: $GameLogic.returnRound(_p32),player: $Helpers.unsafe($GameLogic.returnPlayer(_p32))}}),
                    _p32)
                    ,_1: $Maybe.Nothing};
          }

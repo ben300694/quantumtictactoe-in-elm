@@ -1,12 +1,11 @@
 module GameView (..) where
 
-import GameLogic exposing (..)
 import Color exposing (black)
+import GameLogic exposing (..)
+import Graph exposing (..)
+import Helpers exposing (..)
 import Text exposing (fromString, bold)
 import List exposing (..)
-
-
---import List.Split
 
 import Graphics.Collage exposing (..)
 import Graphics.Element exposing (..)

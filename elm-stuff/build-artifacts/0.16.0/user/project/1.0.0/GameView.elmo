@@ -8,9 +8,11 @@ Elm.GameView.make = function (_elm) {
    $Color = Elm.Color.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $GameLogic = Elm.GameLogic.make(_elm),
+   $Graph = Elm.Graph.make(_elm),
    $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
    $Graphics$Input = Elm.Graphics.Input.make(_elm),
+   $Helpers = Elm.Helpers.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Mouse = Elm.Mouse.make(_elm),
@@ -65,7 +67,7 @@ Elm.GameView.make = function (_elm) {
       var _p6 = field;
       var nodes = _p6._0;
       var edges = _p6._1;
-      return {ctor: "_Tuple2",_0: label,_1: A2($List.map,function (_) {    return _.label;},A2($GameLogic.incidentEdges,field,node))};
+      return {ctor: "_Tuple2",_0: label,_1: A2($List.map,function (_) {    return _.label;},A2($Graph.incidentEdges,field,node))};
    });
    var size = 600;
    var drawLines = A3($Graphics$Collage.collage,
@@ -121,7 +123,7 @@ Elm.GameView.make = function (_elm) {
       return A2($List.map,function (_p13) {    return $Graphics$Collage.group(printClassicalNode(function (_) {    return _.label;}(_p13)));},nodes);
    };
    var formatOneField = function (forms) {
-      var moveCoordinates = A2($GameLogic.tuples,_U.list([(0 - size) / 9,0,size / 9]),_U.list([size / 9,0,(0 - size) / 9]));
+      var moveCoordinates = A2($Helpers.tuples,_U.list([(0 - size) / 9,0,size / 9]),_U.list([size / 9,0,(0 - size) / 9]));
       return $Graphics$Collage.group(A3($List.map2,F2(function (x,y) {    return x(y);}),A2($List.map,$Graphics$Collage.move,moveCoordinates),forms));
    };
    var printEntangeledEdge = function (_p14) {
@@ -174,7 +176,7 @@ Elm.GameView.make = function (_elm) {
               ,A3($Graphics$Collage.collage,
               1500,
               120,
-              _U.list([$Graphics$Collage.toForm($Graphics$Element.show(A2($GameLogic.reachableFromNode,field,testNode3)))]))]));
+              _U.list([$Graphics$Collage.toForm($Graphics$Element.show(A2($Graph.reachableFromNode,field,testNode3)))]))]));
    };
    var getPosition = function (_p24) {
       var _p25 = _p24;
@@ -205,7 +207,7 @@ Elm.GameView.make = function (_elm) {
                    ,_0: A2($GameLogic.addMove,
                    $GameLogic.Entangled({first: idFromPosition(getPosition({ctor: "_Tuple2",_0: _p33,_1: _p34}))
                                         ,second: idFromPosition(getPosition({ctor: "_Tuple2",_0: _p30._0._0,_1: _p30._0._1}))
-                                        ,label: {numberOfMove: $GameLogic.returnRound(_p32),player: $GameLogic.unsafe($GameLogic.returnPlayer(_p32))}}),
+                                        ,label: {numberOfMove: $GameLogic.returnRound(_p32),player: $Helpers.unsafe($GameLogic.returnPlayer(_p32))}}),
                    _p32)
                    ,_1: $Maybe.Nothing};
          }
