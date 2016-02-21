@@ -20,6 +20,20 @@ Elm.GameView.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Text = Elm.Text.make(_elm);
    var _op = {};
+   var collapseTestField = {ctor: "_Tuple2"
+                           ,_0: _U.list([{id: 1,label: {pos: {col: 1,row: 1},numberOfMove: 5,player: $Maybe.Just($GameLogic.X)}}
+                                        ,{id: 2,label: {pos: {col: 1,row: 2},numberOfMove: -1,player: $Maybe.Nothing}}
+                                        ,{id: 3,label: {pos: {col: 1,row: 3},numberOfMove: -1,player: $Maybe.Nothing}}
+                                        ,{id: 4,label: {pos: {col: 2,row: 1},numberOfMove: -1,player: $Maybe.Nothing}}
+                                        ,{id: 5,label: {pos: {col: 2,row: 2},numberOfMove: -1,player: $Maybe.Nothing}}
+                                        ,{id: 6,label: {pos: {col: 2,row: 3},numberOfMove: -1,player: $Maybe.Nothing}}
+                                        ,{id: 7,label: {pos: {col: 3,row: 1},numberOfMove: -1,player: $Maybe.Nothing}}
+                                        ,{id: 8,label: {pos: {col: 3,row: 2},numberOfMove: -1,player: $Maybe.Nothing}}
+                                        ,{id: 9,label: {pos: {col: 3,row: 3},numberOfMove: -1,player: $Maybe.Nothing}}])
+                           ,_1: _U.list([{first: 1,second: 2,label: {numberOfMove: 4,player: $GameLogic.O}}
+                                        ,{first: 1,second: 4,label: {numberOfMove: 7,player: $GameLogic.X}}
+                                        ,{first: 4,second: 2,label: {numberOfMove: 9,player: $GameLogic.X}}])};
+   var collapseTestState = A4($GameLogic.NotFinishedGame,$GameLogic.O,collapseTestField,_U.list([]),7);
    var testField = {ctor: "_Tuple2"
                    ,_0: _U.list([{id: 1,label: {pos: {col: 1,row: 1},numberOfMove: 3,player: $Maybe.Just($GameLogic.X)}}
                                 ,{id: 2,label: {pos: {col: 1,row: 2},numberOfMove: -1,player: $Maybe.Nothing}}
@@ -37,7 +51,6 @@ Elm.GameView.make = function (_elm) {
                                 ,{first: 9,second: 2,label: {numberOfMove: 12,player: $GameLogic.X}}
                                 ,{first: 2,second: 6,label: {numberOfMove: 6,player: $GameLogic.O}}])};
    var testState = A3($GameLogic.NotFinishedGame,$GameLogic.X,testField,_U.list([]));
-   var testState2 = A3($GameLogic.FinishedGame,$GameLogic.Tie($GameLogic.O),testField,_U.list([]));
    var testNode3 = {id: 6,label: {pos: {col: 2,row: 3},numberOfMove: -1,player: $Maybe.Nothing}};
    var testNode2 = {id: 4,label: {pos: {col: 2,row: 1},numberOfMove: -1,player: $Maybe.Nothing}};
    var idFromPosition = function (_p0) {    var _p1 = _p0;return 3 * (_p1.col - 1) + _p1.row;};
@@ -173,10 +186,7 @@ Elm.GameView.make = function (_elm) {
               ,A4($Graphics$Element.container,size,40,$Graphics$Element.middle,$Graphics$Element.leftAligned($Text.fromString(stateDescription(state))))
               ,A4($Graphics$Element.container,size,40,$Graphics$Element.middle,$Graphics$Element.leftAligned($Text.fromString(collapseMessage)))
               ,A4($Graphics$Element.container,size,50,$Graphics$Element.middle,A2($Graphics$Element.flow,$Graphics$Element.right,_U.list([newGameButton])))
-              ,A3($Graphics$Collage.collage,
-              1500,
-              120,
-              _U.list([$Graphics$Collage.toForm($Graphics$Element.show(A2($Graph.reachableFromNode,field,testNode3)))]))]));
+              ,A3($Graphics$Collage.collage,1000,200,_U.list([$Graphics$Collage.toForm($Graphics$Element.show(field))]))]));
    };
    var getPosition = function (_p24) {
       var _p25 = _p24;
@@ -213,7 +223,7 @@ Elm.GameView.make = function (_elm) {
          }
    });
    var gameStateSignal = A3($Signal.foldp,update,{ctor: "_Tuple2",_0: $GameLogic.initialState,_1: $Maybe.Nothing},clickSignal);
-   var main = A2($Signal.map,view,A2($Signal.map,$Basics.fst,gameStateSignal));
+   var main = A2($Signal.map,function (_p35) {    return view($Basics.fst(_p35));},gameStateSignal);
    return _elm.GameView.values = {_op: _op
                                  ,size: size
                                  ,drawLines: drawLines
@@ -242,5 +252,6 @@ Elm.GameView.make = function (_elm) {
                                  ,testNode3: testNode3
                                  ,testField: testField
                                  ,testState: testState
-                                 ,testState2: testState2};
+                                 ,collapseTestField: collapseTestField
+                                 ,collapseTestState: collapseTestState};
 };

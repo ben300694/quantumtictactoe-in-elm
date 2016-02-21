@@ -112,6 +112,12 @@ removeNodes graph toRemove = let
         [] -> graph
         (node::rest) -> removeNodes (List.filter (\x -> x.id /= node.id) nodes, List.filter (\x -> (x.first /= node.id) && (x.second /= node.id)) edges) rest        
 
+isEdgeInGraph : Graph a e -> Edge e -> Bool
+isEdgeInGraph graph edge = let
+        (nodes, edges) = graph
+  in
+        member edge edges
+
 removeEdge : Graph a e -> Edge e -> Graph a e
 removeEdge graph edge = let
     (nodes,edges) = graph

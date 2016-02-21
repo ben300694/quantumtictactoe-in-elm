@@ -41,4 +41,7 @@ tuples : List a -> List b -> List ( a, b )
 tuples xs ys =
   List.concatMap (\x -> (List.map (\y -> ( x, y )) ys)) xs
 
-
+fpow : Int -> (a -> a) -> a -> a
+fpow n f a = case n of
+        0 -> a
+        _ -> f (fpow (n-1) f a)

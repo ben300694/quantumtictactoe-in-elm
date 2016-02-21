@@ -11,34 +11,35 @@ Elm.Helpers.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
+   var fpow = F3(function (n,f,a) {    var _p0 = n;if (_p0 === 0) {    return a;} else {    return f(A3(fpow,n - 1,f,a));}});
    var tuples = F2(function (xs,ys) {
       return A2($List.concatMap,function (x) {    return A2($List.map,function (y) {    return {ctor: "_Tuple2",_0: x,_1: y};},ys);},xs);
    });
    var zip = $List.map2(F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}));
    var unsafe = function (v) {
-      var _p0 = v;
-      if (_p0.ctor === "Just") {
-            return _p0._0;
+      var _p1 = v;
+      if (_p1.ctor === "Just") {
+            return _p1._0;
          } else {
-            return _U.crashCase("Helpers",{start: {line: 28,column: 3},end: {line: 33,column: 40}},_p0)("unsafe with Nothing");
+            return _U.crashCase("Helpers",{start: {line: 28,column: 3},end: {line: 33,column: 40}},_p1)("unsafe with Nothing");
          }
    };
-   var isJust = function (a) {    var _p2 = a;if (_p2.ctor === "Just") {    return true;} else {    return false;}};
+   var isJust = function (a) {    var _p3 = a;if (_p3.ctor === "Just") {    return true;} else {    return false;}};
    var removeDuplicates = function (list) {
       removeDuplicates: while (true) {
-         var _p3 = list;
-         if (_p3.ctor === "[]") {
+         var _p4 = list;
+         if (_p4.ctor === "[]") {
                return _U.list([]);
             } else {
-               var _p5 = _p3._1;
-               var _p4 = _p3._0;
-               if (A2($List.member,_p4,_p5)) {
-                     var _v3 = _p5;
-                     list = _v3;
+               var _p6 = _p4._1;
+               var _p5 = _p4._0;
+               if (A2($List.member,_p5,_p6)) {
+                     var _v4 = _p6;
+                     list = _v4;
                      continue removeDuplicates;
-                  } else return A2($List._op["::"],_p4,removeDuplicates(_p5));
+                  } else return A2($List._op["::"],_p5,removeDuplicates(_p6));
             }
       }
    };
-   return _elm.Helpers.values = {_op: _op,removeDuplicates: removeDuplicates,isJust: isJust,unsafe: unsafe,zip: zip,tuples: tuples};
+   return _elm.Helpers.values = {_op: _op,removeDuplicates: removeDuplicates,isJust: isJust,unsafe: unsafe,zip: zip,tuples: tuples,fpow: fpow};
 };

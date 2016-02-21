@@ -7,13 +7,27 @@ Elm.Repl.make = function (_elm) {
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $GameLogic = Elm.GameLogic.make(_elm),
-   $GameView = Elm.GameView.make(_elm),
+   $Graph = Elm.Graph.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var tsol = {ctor: "_Tuple0"};
-   var deltron3030 = A2($GameLogic.reachableFromNode,$GameView.testField,$GameView.testNode2);
+   var deltron3030 = A2($Graph.removeEdge,
+   {ctor: "_Tuple2"
+   ,_0: _U.list([{id: 1,label: {pos: {col: 1,row: 1},numberOfMove: 5,player: $Maybe.Just($GameLogic.X)}}
+                ,{id: 2,label: {pos: {col: 1,row: 2},numberOfMove: -1,player: $Maybe.Nothing}}
+                ,{id: 3,label: {pos: {col: 1,row: 3},numberOfMove: -1,player: $Maybe.Nothing}}
+                ,{id: 4,label: {pos: {col: 2,row: 1},numberOfMove: -1,player: $Maybe.Nothing}}
+                ,{id: 5,label: {pos: {col: 2,row: 2},numberOfMove: -1,player: $Maybe.Nothing}}
+                ,{id: 6,label: {pos: {col: 2,row: 3},numberOfMove: -1,player: $Maybe.Nothing}}
+                ,{id: 7,label: {pos: {col: 3,row: 1},numberOfMove: -1,player: $Maybe.Nothing}}
+                ,{id: 8,label: {pos: {col: 3,row: 2},numberOfMove: -1,player: $Maybe.Nothing}}
+                ,{id: 9,label: {pos: {col: 3,row: 3},numberOfMove: -1,player: $Maybe.Nothing}}])
+   ,_1: _U.list([{first: 1,second: 2,label: {numberOfMove: 4,player: $GameLogic.O}}
+                ,{first: 1,second: 4,label: {numberOfMove: 7,player: $GameLogic.X}}
+                ,{first: 4,second: 2,label: {numberOfMove: 9,player: $GameLogic.X}}])},
+   {first: 1,second: 2,label: {numberOfMove: 4,player: $GameLogic.O}});
    return _elm.Repl.values = {_op: _op,deltron3030: deltron3030,tsol: tsol};
 };

@@ -219,7 +219,7 @@ view state =
       , container size 40 middle <| leftAligned <| fromString <| stateDescription state
       , container size 40 middle <| leftAligned <| fromString collapseMessage
       , container size 50 middle <| flow right [ newGameButton ]
-      , collage 1500 120 [ toForm <| show (reachableFromNode field testNode3) ]
+      , collage 1000 200 [ toForm <| show field ]
       ]
 
 
@@ -302,7 +302,7 @@ gameStateSignal =
 
 main : Signal Element
 main =
-  Signal.map view (Signal.map fst gameStateSignal)
+  Signal.map (view << fst) gameStateSignal
 
 
 
@@ -320,10 +320,12 @@ testNode3 =
 testField =
   ( [ { id = 1, label = { pos = { col = 1, row = 1 }, numberOfMove = 3, player = Just X } }, { id = 2, label = { pos = { col = 1, row = 2 }, numberOfMove = -1, player = Nothing } }, { id = 3, label = { pos = { col = 1, row = 3 }, numberOfMove = 5, player = Just O } }, { id = 4, label = { pos = { col = 2, row = 1 }, numberOfMove = -1, player = Nothing } }, { id = 5, label = { pos = { col = 2, row = 2 }, numberOfMove = -1, player = Nothing } }, { id = 6, label = { pos = { col = 2, row = 3 }, numberOfMove = -1, player = Nothing } }, { id = 7, label = { pos = { col = 3, row = 1 }, numberOfMove = -1, player = Nothing } }, { id = 8, label = { pos = { col = 3, row = 2 }, numberOfMove = -1, player = Nothing } }, { id = 9, label = { pos = { col = 3, row = 3 }, numberOfMove = -1, player = Nothing } } ], [ { first = 4, second = 8, label = { numberOfMove = 7, player = X } }, { first = 8, second = 6, label = { numberOfMove = 8, player = O } }, { first = 9, second = 6, label = { numberOfMove = 3, player = O } }, { first = 8, second = 6, label = { numberOfMove = 4, player = X } }, { first = 9, second = 2, label = { numberOfMove = 12, player = X } }, { first = 2, second = 6, label = { numberOfMove = 6, player = O } } ] )
 
-
 testState =
   NotFinishedGame X testField []
 
+collapseTestField = ([{ id = 1, label = { pos = { col = 1, row = 1 }, numberOfMove = 5, player = Just X } },{ id = 2, label = { pos = { col = 1, row = 2 }, numberOfMove = -1, player = Nothing } },{ id = 3, label = { pos = { col = 1, row = 3 }, numberOfMove = -1, player = Nothing } },{ id = 4, label = { pos = { col = 2, row = 1 }, numberOfMove = -1, player = Nothing } },{ id = 5, label = { pos = { col = 2, row = 2 }, numberOfMove = -1, player = Nothing } },{ id = 6, label = { pos = { col = 2, row = 3 }, numberOfMove = -1, player = Nothing } },{ id = 7, label = { pos = { col = 3, row = 1 }, numberOfMove = -1, player = Nothing } },{ id = 8, label = { pos = { col = 3, row = 2 }, numberOfMove = -1, player = Nothing } },{ id = 9, label = { pos = { col = 3, row = 3 }, numberOfMove = -1, player = Nothing } }],[{first = 1, second = 2, label = {numberOfMove = 4, player = O}},{first = 1, second = 4, label = {numberOfMove = 7, player = X}}, {first = 4, second = 2, label = {numberOfMove = 9, player = X}}])
 
-testState2 =
-  FinishedGame (Tie O) testField []
+--collapseTestField' = collapseOneEdge collapseTestField {first = 1, second = 2, label = {numberOfMove = 4, player = O}}
+
+collapseTestState =
+  NotFinishedGame O collapseTestField [] 7
