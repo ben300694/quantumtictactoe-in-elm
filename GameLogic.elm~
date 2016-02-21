@@ -132,7 +132,7 @@ fieldNumbers =
   tuples [1..3] [1..3]
 
 
-nodes =
+emptyNodes =
   List.map nodeConstr (zip [1..9] fieldNumbers)
 
 
@@ -142,7 +142,7 @@ nodes =
 
 emptyField : Field
 emptyField =
-  ( nodes, [] )
+  ( emptyNodes, [] )
 
 
 initialState : GameState
@@ -177,7 +177,7 @@ isValidMove move state =
   in
     case move of
       Entangled edge ->
-        if (isCollapseNecessary field) then
+        if (isCollapseNecessary field) || (edge.first == edge.second) then
           False
         else
           not <| isEdgeOnField edge field
@@ -233,15 +233,30 @@ addMove move state =
       state
 
 replaceNode : Field -> Node NodeLabel -> Player -> Field
-replaceNode field node p = let
+replaceNode field node newPlayer = let
                   (nodes, edges) = field
-                  newNumberOfMove = unsafe <| maximum <| List.map (\x -> x.label.numberOfMove) <| List.filter (\x -> x.label.player == unsafe node.label.player) (incidentEdges field node)
-                  l = node.label
-                  newLabel = {l | numberOfMove = newNumberOfMove, player = Just p}
+                  newNumberOfMove = case maximum
+                                        <| List.map (\x -> x.label.numberOfMove)
+                                        <| List.filter (\x -> x.label.player == newPlayer) (incidentEdges field node)
+                                    of Nothing -> -1
+                                       Just n -> n
+                  oldLabel = node.label
+                  newLabel = {oldLabel | numberOfMove = newNumberOfMove, player = Just newPlayer}
                   newNode = {node | label = newLabel}
   in
     ( updateNode newNode nodes, edges )
 
+setPlayerInNode : Field -> Node NodeLabel -> Player -> Round -> Field
+setPlayerInNode field node newPlayer round = let
+                  (nodes, edges) = field
+                  oldLabel = node.label
+                  newLabel = {oldLabel | numberOfMove = round, player = Just newPlayer}
+                  newNode = {node | label = newLabel}
+  in
+    (updateNode newNode nodes, edges)
+
+{-TODO-}
+{--}
 
 --type alias NodeLabel = { pos: Position, numberOfMove: Int, player: Maybe Player }
 --type alias EdgeLabel = { numberOfMove: Int, player: Player }
@@ -261,11 +276,14 @@ checkIfFinished state =
 
 
 {- -}
-performEntireCollapse : Field -> Field
-performEntireCollapse field = let
+performOneStepInCollapse : Field -> Field
+performOneStepInCollapse field = let
     (nodes,edges) = field
   in
-    field {-TODO-}
+    foldl (\e f -> collapseOneEdge f e) field edges
+
+performEntireCollapse : Field -> Field
+performEntireCollapse = fpow 9 performOneStepInCollapse
 
 collapseOneEdge : Field -> Edge EdgeLabel -> Field
 collapseOneEdge field edge = let
@@ -273,20 +291,15 @@ collapseOneEdge field edge = let
     firstNode = unsafe <| getNodeFromId field edge.first
     secondNode = unsafe <| getNodeFromId field edge.second
     edgePlayer = edge.label.player
-  in
+  in if not <| isEdgeInGraph field edge then field else
     case firstNode.label.player of
         Nothing -> case secondNode.label.player of
                         Nothing -> field
-                        Just player -> if player == edgePlayer then removeEdge field edge else removeEdge (replaceNode field firstNode edgePlayer) edge
-        Just player -> if player == edgePlayer then removeEdge field edge else removeEdge (replaceNode field secondNode edgePlayer) edge  
-
-
-{-
-type alias NodeLabel =
-  { pos : Position, numberOfMove : Int, player : Maybe Player }
-
-
-type alias EdgeLabel =
-  { numberOfMove : Int, player : Player }
-
--}
+                        Just player -> if player == edgePlayer && edge.label.numberOfMove == secondNode.label.numberOfMove
+                                       then removeEdge field edge 
+                                       else removeEdge (setPlayerInNode field firstNode edgePlayer edge.label.numberOfMove) edge
+        Just player -> case secondNode.label.player of
+                            Nothing -> if player == edgePlayer && edge.label.numberOfMove == firstNode.label.numberOfMove
+                                       then removeEdge field edge
+                                       else removeEdge (setPlayerInNode field secondNode edgePlayer edge.label.numberOfMove) edge
+                            Just _ -> removeEdge field edge

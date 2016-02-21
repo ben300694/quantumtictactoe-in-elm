@@ -47,37 +47,37 @@ Elm.GameLogic.make = function (_elm) {
                         field,
                         edge) : A2($Graph.removeEdge,A4(setPlayerInNode,field,secondNode,edgePlayer,edge.label.numberOfMove),edge);
                      } else {
-                        return _U.crashCase("GameLogic",{start: {line: 301,column: 24},end: {line: 305,column: 76}},_p4)("Edge can\'t be collapsed");
+                        return A2($Graph.removeEdge,field,edge);
                      }
                }
          }
    });
    var performOneStepInCollapse = function (field) {
-      var _p6 = field;
-      var nodes = _p6._0;
-      var edges = _p6._1;
+      var _p5 = field;
+      var nodes = _p5._0;
+      var edges = _p5._1;
       return A3($List.foldl,F2(function (e,f) {    return A2(collapseOneEdge,f,e);}),field,edges);
    };
    var performEntireCollapse = A2($Helpers.fpow,9,performOneStepInCollapse);
    var replaceNode = F3(function (field,node,newPlayer) {
       var oldLabel = node.label;
       var newNumberOfMove = function () {
-         var _p7 = $List.maximum(A2($List.map,
+         var _p6 = $List.maximum(A2($List.map,
          function (x) {
             return x.label.numberOfMove;
          },
          A2($List.filter,function (x) {    return _U.eq(x.label.player,newPlayer);},A2($Graph.incidentEdges,field,node))));
-         if (_p7.ctor === "Nothing") {
+         if (_p6.ctor === "Nothing") {
                return -1;
             } else {
-               return _p7._0;
+               return _p6._0;
             }
       }();
       var newLabel = _U.update(oldLabel,{numberOfMove: newNumberOfMove,player: $Maybe.Just(newPlayer)});
       var newNode = _U.update(node,{label: newLabel});
-      var _p8 = field;
-      var nodes = _p8._0;
-      var edges = _p8._1;
+      var _p7 = field;
+      var nodes = _p7._0;
+      var edges = _p7._1;
       return {ctor: "_Tuple2",_0: A2($Graph.updateNode,newNode,nodes),_1: edges};
    });
    var isCollapseNecessary = function (field) {    return $Helpers.isJust($Graph.findComponentWithCycle(field));};
@@ -86,45 +86,45 @@ Elm.GameLogic.make = function (_elm) {
          return (_U.eq(x.first,edge.first) && _U.eq(x.second,edge.second) || _U.eq(x.first,edge.second) && _U.eq(x.second,
          edge.first)) && _U.eq(edge.label.player,x.label.player);
       };
-      var _p9 = field;
-      var nodes = _p9._0;
-      var edges = _p9._1;
+      var _p8 = field;
+      var nodes = _p8._0;
+      var edges = _p8._1;
       return $Basics.not($List.isEmpty(A2($List.filter,condition,edges)));
    });
    var fieldNumbers = A2($Helpers.tuples,_U.range(1,3),_U.range(1,3));
-   var nodeConstr = function (_p10) {
-      var _p11 = _p10;
-      return {id: _p11._0,label: {pos: {col: _p11._1._0,row: _p11._1._1},numberOfMove: -1,player: $Maybe.Nothing}};
+   var nodeConstr = function (_p9) {
+      var _p10 = _p9;
+      return {id: _p10._0,label: {pos: {col: _p10._1._0,row: _p10._1._1},numberOfMove: -1,player: $Maybe.Nothing}};
    };
    var emptyNodes = A2($List.map,nodeConstr,A2($Helpers.zip,_U.range(1,9),fieldNumbers));
    var emptyField = {ctor: "_Tuple2",_0: emptyNodes,_1: _U.list([])};
-   var returnMoves = function (state) {    var _p12 = state;if (_p12.ctor === "FinishedGame") {    return _p12._2;} else {    return _p12._2;}};
+   var returnMoves = function (state) {    var _p11 = state;if (_p11.ctor === "FinishedGame") {    return _p11._2;} else {    return _p11._2;}};
    var returnPlayer = function (state) {
-      var _p13 = state;
-      if (_p13.ctor === "FinishedGame") {
+      var _p12 = state;
+      if (_p12.ctor === "FinishedGame") {
             return $Maybe.Nothing;
          } else {
-            return $Maybe.Just(_p13._0);
+            return $Maybe.Just(_p12._0);
          }
    };
-   var returnRound = function (state) {    var _p14 = state;if (_p14.ctor === "FinishedGame") {    return 0;} else {    return _p14._3;}};
-   var returnField = function (state) {    var _p15 = state;if (_p15.ctor === "FinishedGame") {    return _p15._1;} else {    return _p15._1;}};
+   var returnRound = function (state) {    var _p13 = state;if (_p13.ctor === "FinishedGame") {    return 0;} else {    return _p13._3;}};
+   var returnField = function (state) {    var _p14 = state;if (_p14.ctor === "FinishedGame") {    return _p14._1;} else {    return _p14._1;}};
    var isValidMove = F2(function (move,state) {
       var field = returnField(state);
-      var _p16 = field;
-      var nodes = _p16._0;
-      var edges = _p16._1;
-      var _p17 = move;
-      if (_p17.ctor === "Entangled") {
-            var _p18 = _p17._0;
-            return isCollapseNecessary(field) || _U.eq(_p18.first,_p18.second) ? false : $Basics.not(A2(isEdgeOnField,_p18,field));
+      var _p15 = field;
+      var nodes = _p15._0;
+      var edges = _p15._1;
+      var _p16 = move;
+      if (_p16.ctor === "Entangled") {
+            var _p17 = _p16._0;
+            return isCollapseNecessary(field) || _U.eq(_p17.first,_p17.second) ? false : $Basics.not(A2(isEdgeOnField,_p17,field));
          } else {
-            var _p19 = _p17._0;
+            var _p18 = _p16._0;
             if (isCollapseNecessary(field)) {
-                  var edgesIncidentToNode = A2($Graph.incidentEdges,field,_p19);
+                  var edgesIncidentToNode = A2($Graph.incidentEdges,field,_p18);
                   var componentWithCycle = $Helpers.unsafe($Graph.findComponentWithCycle(field));
-                  return A2($List.member,_p19.id,A2($List.map,function (_) {    return _.id;},componentWithCycle)) && A2($List.member,
-                  $Helpers.unsafe(_p19.label.player),
+                  return A2($List.member,_p18.id,A2($List.map,function (_) {    return _.id;},componentWithCycle)) && A2($List.member,
+                  $Helpers.unsafe(_p18.label.player),
                   A2($List.map,function (y) {    return y.label.player;},edgesIncidentToNode)) ? true : false;
                } else return false;
          }
@@ -132,11 +132,11 @@ Elm.GameLogic.make = function (_elm) {
    var NotFinishedGame = F4(function (a,b,c,d) {    return {ctor: "NotFinishedGame",_0: a,_1: b,_2: c,_3: d};});
    var FinishedGame = F3(function (a,b,c) {    return {ctor: "FinishedGame",_0: a,_1: b,_2: c};});
    var checkIfFinished = function (state) {
-      var _p20 = state;
-      if (_p20.ctor === "FinishedGame") {
-            return A3(FinishedGame,_p20._0,_p20._1,_p20._2);
+      var _p19 = state;
+      if (_p19.ctor === "FinishedGame") {
+            return A3(FinishedGame,_p19._0,_p19._1,_p19._2);
          } else {
-            return A4(NotFinishedGame,_p20._0,_p20._1,_p20._2,_p20._3);
+            return A4(NotFinishedGame,_p19._0,_p19._1,_p19._2,_p19._3);
          }
    };
    var Collapse = function (a) {    return {ctor: "Collapse",_0: a};};
@@ -150,27 +150,27 @@ Elm.GameLogic.make = function (_elm) {
    var X = {ctor: "X"};
    var initialState = A4(NotFinishedGame,X,emptyField,_U.list([]),0);
    var O = {ctor: "O"};
-   var switchPlayer = function (p) {    var _p21 = p;if (_p21.ctor === "X") {    return O;} else {    return X;}};
+   var switchPlayer = function (p) {    var _p20 = p;if (_p20.ctor === "X") {    return O;} else {    return X;}};
    var addMove = F2(function (move,state) {
       var field = returnField(state);
-      var _p22 = field;
-      var nodes = _p22._0;
-      var edges = _p22._1;
+      var _p21 = field;
+      var nodes = _p21._0;
+      var edges = _p21._1;
       return A2(isValidMove,move,state) ? checkIfFinished(function () {
-         var _p23 = move;
-         if (_p23.ctor === "Entangled") {
+         var _p22 = move;
+         if (_p22.ctor === "Entangled") {
                return A4(NotFinishedGame,
                switchPlayer($Helpers.unsafe(returnPlayer(state))),
                {ctor: "_Tuple2"
                ,_0: nodes
-               ,_1: A2($List._op["::"],_U.update(_p23._0,{label: {numberOfMove: returnRound(state),player: $Helpers.unsafe(returnPlayer(state))}}),edges)},
+               ,_1: A2($List._op["::"],_U.update(_p22._0,{label: {numberOfMove: returnRound(state),player: $Helpers.unsafe(returnPlayer(state))}}),edges)},
                A2($List._op["::"],move,returnMoves(state)),
                returnRound(state) + 1);
             } else {
-               var _p24 = _p23._0;
+               var _p23 = _p22._0;
                return A4(NotFinishedGame,
                $Helpers.unsafe(returnPlayer(state)),
-               performEntireCollapse(A3(replaceNode,field,_p24,$Helpers.unsafe(_p24.label.player))),
+               performEntireCollapse(A3(replaceNode,field,_p23,$Helpers.unsafe(_p23.label.player))),
                A2($List._op["::"],move,returnMoves(state)),
                returnRound(state));
             }
@@ -206,7 +206,7 @@ Elm.GameLogic.make = function (_elm) {
                                   ,replaceNode: replaceNode
                                   ,setPlayerInNode: setPlayerInNode
                                   ,checkIfFinished: checkIfFinished
-                                  ,performOneStepInCollapse: performOneStepInCollapse
                                   ,performEntireCollapse: performEntireCollapse
+                                  ,performOneStepInCollapse: performOneStepInCollapse
                                   ,collapseOneEdge: collapseOneEdge};
 };

@@ -274,6 +274,8 @@ checkIfFinished state =
 {- TODO -}
 
 
+performEntireCollapse : Field -> Field
+performEntireCollapse = fpow 9 performOneStepInCollapse
 
 {- -}
 performOneStepInCollapse : Field -> Field
@@ -281,9 +283,6 @@ performOneStepInCollapse field = let
     (nodes,edges) = field
   in
     foldl (\e f -> collapseOneEdge f e) field edges
-
-performEntireCollapse : Field -> Field
-performEntireCollapse = fpow 9 performOneStepInCollapse
 
 collapseOneEdge : Field -> Edge EdgeLabel -> Field
 collapseOneEdge field edge = let
@@ -302,16 +301,4 @@ collapseOneEdge field edge = let
                             Nothing -> if player == edgePlayer && edge.label.numberOfMove == firstNode.label.numberOfMove
                                        then removeEdge field edge
                                        else removeEdge (setPlayerInNode field secondNode edgePlayer edge.label.numberOfMove) edge
-                            Just _ -> Debug.crash "Edge can't be collapsed"
-{-TODO-}
-
-
-{-
-type alias NodeLabel =
-  { pos : Position, numberOfMove : Int, player : Maybe Player }
-
-
-type alias EdgeLabel =
-  { numberOfMove : Int, player : Player }
-
--}
+                            Just _ -> removeEdge field edge
